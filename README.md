@@ -9,7 +9,9 @@ Use the PS1 format if you can directly run script files, otherwise use the Text 
 If you do not have all the required modules already installed, it will attempt to auto-install them (the 3 are listed below):
 
 NuGet Provider
+
 MicrosoftPowerBIMgmt
+
 ImportExcel
 
 This will also check the PowerShell Execution Policy and update if needed (to allow the above modules to work).
