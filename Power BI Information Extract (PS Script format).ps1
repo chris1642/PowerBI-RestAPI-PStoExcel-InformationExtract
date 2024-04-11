@@ -1,6 +1,16 @@
-# Ensure the necessary modules are installed
-# Install-Module -Name MicrosoftPowerBIMgmt -Scope CurrentUser
-# Install-Module -Name ImportExcel -Scope CurrentUser
+# Check and set the execution policy
+$currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+if ($currentPolicy -eq 'Restricted') {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+}
+
+# Check and install the necessary modules
+$requiredModules = @('MicrosoftPowerBIMgmt', 'ImportExcel')
+foreach ($module in $requiredModules) {
+    if (-not (Get-Module -ListAvailable -Name $module)) {
+        Install-Module -Name $module -Scope CurrentUser -Force
+    }
+}
 
 # Connect to the Power BI Service
 Connect-PowerBIServiceAccount
@@ -10,6 +20,7 @@ $workspacesInfo = @()
 $datasetsInfo = @()
 $reportsInfo = @()
 $appsInfo = @()
+$reportPagesInfo = @()
 
 # Fetch list of Workspaces available to the user
 $workspaces = Get-PowerBIWorkspace
@@ -37,24 +48,20 @@ foreach ($workspace in $workspaces) {
     # Reports
     $workspaceReports = Get-PowerBIReport -WorkspaceId $workspace.Id
     foreach ($report in $workspaceReports) {
+        # Fetch the dataset associated with the report
+        $reportDataset = $workspaceDatasets | Where-Object { $_.Id -eq $report.DatasetId }
+
         $reportInfo = [PSCustomObject]@{
             WorkspaceName = $workspace.Name
             WorkspaceId = $workspace.Id
-            DatasetId = $dataset.Id
-            DatasetName = $dataset.Name
+            DatasetId = $reportDataset.Id
+            DatasetName = $reportDataset.Name
             ReportId = $report.Id
             ReportName = $report.Name
         }
         $reportsInfo += $reportInfo
     }
 }
-
-# Assuming earlier parts of the script are unchanged and lead up to this point
-
-# Initialize an array to hold report pages information
-$appsInfo = @()
-$reportPagesInfo = @()
-
 
 # Fetch list of Apps available to the user
 $appsUrl = "https://api.powerbi.com/v1.0/myorg/apps"
@@ -66,7 +73,6 @@ foreach ($app in $apps.value) {
         AppWorkspaceId = $app.workspaceId
     }
     $appsInfo += $appInfo
-
 }
 
 # Fetch Report Pages within Workspaces
