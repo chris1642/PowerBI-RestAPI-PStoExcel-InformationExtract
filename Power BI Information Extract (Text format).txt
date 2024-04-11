@@ -1,3 +1,6 @@
+# Define the Excel file path
+$excelFile = "C:\PowerBIReports\Power BI Information Extract.xlsx"
+
 # Check and set the execution policy
 $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
 if ($currentPolicy -eq 'Restricted') {
@@ -11,6 +14,10 @@ foreach ($module in $requiredModules) {
         Install-Module -Name $module -Scope CurrentUser -Force
     }
 }
+
+Import-Module ImportExcel
+Import-Module MicrosoftPowerBIMgmt
+
 
 # Connect to the Power BI Service
 Connect-PowerBIServiceAccount
@@ -96,9 +103,6 @@ foreach ($workspace in $workspaces) {
         }
     }
 }
-
-# Define the Excel file path
-$excelFile = "C:\PowerBIReports\Power BI Information Extract.xlsx"
 
 # Check if the Excel file already exists and delete it if it does
 if (Test-Path $excelFile) {
