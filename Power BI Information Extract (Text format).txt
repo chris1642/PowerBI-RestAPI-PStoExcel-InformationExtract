@@ -3,8 +3,12 @@ $excelFile = "C:\PowerBIReports\Power BI Information Extract.xlsx"
 
 # Check and set the execution policy
 $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-if ($currentPolicy -eq 'Restricted') {
+if ($currentPolicy -eq 'Restricted' -or $currentPolicy -eq 'Undefined' -or $currentPolicy -eq 'AllSigned') {
+    Write-Host "Current execution policy is restrictive: $currentPolicy. Attempting to set to RemoteSigned."
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    Write-Host "Execution policy set to RemoteSigned."
+} else {
+    Write-Host "Current execution policy is sufficient: $currentPolicy."
 }
 
 # Check and install the necessary modules
