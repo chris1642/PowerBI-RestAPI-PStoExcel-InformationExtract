@@ -30,8 +30,9 @@ Connect-PowerBIServiceAccount
 $workspacesInfo = @()
 $datasetsInfo = @()
 $reportsInfo = @()
-$appsInfo = @()
 $reportPagesInfo = @()
+$appsInfo = @()
+$reportsInAppInfo = @()
 
 # Fetch list of Workspaces available to the user
 $workspaces = Get-PowerBIWorkspace
@@ -74,18 +75,6 @@ foreach ($workspace in $workspaces) {
     }
 }
 
-# Fetch list of Apps available to the user
-$appsUrl = "https://api.powerbi.com/v1.0/myorg/apps"
-$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl | ConvertFrom-Json
-foreach ($app in $apps.value) {
-    $appInfo = [PSCustomObject]@{
-        AppId = $app.id
-        AppName = $app.name
-        AppWorkspaceId = $app.workspaceId
-    }
-    $appsInfo += $appInfo
-}
-
 # Fetch Report Pages within Workspaces
 foreach ($workspace in $workspaces) {
     $workspaceReports = Get-PowerBIReport -WorkspaceId $workspace.Id
@@ -108,6 +97,31 @@ foreach ($workspace in $workspaces) {
     }
 }
 
+# Fetch list of Apps available to the user and the reports within each app
+$appsUrl = "https://api.powerbi.com/v1.0/myorg/apps"
+$apps = Invoke-PowerBIRestMethod -Method GET -Url $appsUrl | ConvertFrom-Json
+foreach ($app in $apps.value) {
+    $appInfo = [PSCustomObject]@{
+        AppId = $app.id
+        AppName = $app.name
+        AppWorkspaceId = $app.workspaceId
+    }
+    $appsInfo += $appInfo
+
+    # Fetch reports within each app
+    $appReportsUrl = "https://api.powerbi.com/v1.0/myorg/apps/$($app.id)/reports"
+    $reports = Invoke-PowerBIRestMethod -Method GET -Url $appReportsUrl | ConvertFrom-Json
+    foreach ($report in $reports.value) {
+        $reportInAppInfo = [PSCustomObject]@{
+            AppId = $app.id
+            AppName = $app.name
+            ReportId = $report.id
+            ReportName = $report.name
+        }
+        $reportsInAppInfo += $reportInAppInfo
+    }
+}
+
 # Check if the Excel file already exists and delete it if it does
 if (Test-Path $excelFile) {
     Remove-Item $excelFile -Force
@@ -117,8 +131,10 @@ if (Test-Path $excelFile) {
 $workspacesInfo | Export-Excel -Path $excelFile -WorksheetName "Workspaces" -AutoSize
 $datasetsInfo | Export-Excel -Path $excelFile -WorksheetName "Datasets" -AutoSize -Append
 $reportsInfo | Export-Excel -Path $excelFile -WorksheetName "Reports" -AutoSize -Append
-$appsInfo | Export-Excel -Path $excelFile -WorksheetName "Apps" -AutoSize -Append
 $reportPagesInfo | Export-Excel -Path $excelFile -WorksheetName "ReportPages" -AutoSize -Append
+$appsInfo | Export-Excel -Path $excelFile -WorksheetName "Apps" -AutoSize -Append
+$reportsInAppInfo  | Export-Excel -Path $excelFile -WorksheetName "AppReports" -AutoSize -Append
 
 # Notify completion
 Write-Host "Export completed. Data is saved to $excelFile"
+ 
