@@ -1,3 +1,14 @@
+The script will output an Excel doc with all the Power BI info (based on the permissions of the user running) related to:
+ <br />
+  <br />
+- Workspaces
+- Datasets
+- Reports
+- Pages within Reports
+- Apps
+- Reports within Apps
+ <br />
+  <br />
 Use the PS1 format if you can directly run script files, otherwise use the Text format and copy/paste into PowerShell
 
 1. The default export directory and file is set as: "C:\PowerBIReports\Power BI Information Extract.xlsx" - change if needed. (if you want to leverage in a refreshable Power BI dataset, sync a SharePoint folder to your computer and have the directory pointed there to ensure it's an online/web source.
