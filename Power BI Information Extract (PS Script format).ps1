@@ -115,7 +115,7 @@ foreach ($app in $apps.value) {
         $reportInAppInfo = [PSCustomObject]@{
             AppId = $app.id
             AppName = $app.name
-            ReportId = $report.id
+            ReportId = $report.originalReportObjectId
             ReportName = $report.name
         }
         $reportsInAppInfo += $reportInAppInfo
