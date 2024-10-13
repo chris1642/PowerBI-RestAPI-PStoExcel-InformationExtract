@@ -11,16 +11,15 @@ if ($currentPolicy -eq 'Restricted' -or $currentPolicy -eq 'Undefined' -or $curr
     Write-Host "Current execution policy is sufficient: $currentPolicy."
 }
 
-# Check and install the necessary modules
-$requiredModules = @('MicrosoftPowerBIMgmt', 'ImportExcel')
+# Ensure required modules are installed, and imports them. If import fails, error and exit early
+$requiredModules = @( 'ImportExcel', 'MicrosoftPowerBIMgmt' )
 foreach ($module in $requiredModules) {
-    if (-not (Get-Module -ListAvailable -Name $module)) {
-        Install-Module -Name $module -Scope CurrentUser -Force
+    if( -not (Import-Module $module -PassThru -EA ignore) ) {
+       Install-Module -Name $module -Scope CurrentUser -Force
     }
-}
 
-Import-Module ImportExcel
-Import-Module MicrosoftPowerBIMgmt
+    Import-Module $Module -ErrorAction 'stop' # In the rare case Install-Module fails, you probably want a terminating error
+}
 
 
 # Connect to the Power BI Service
